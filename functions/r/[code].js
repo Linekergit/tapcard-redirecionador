@@ -20,9 +20,9 @@ export async function onRequest(context) {
       const erro = await resposta.text();
       console.error("Erro do Supabase:", resposta.status, erro);
 
-      return new Response("Erro ao consultar etiqueta.", {
-        status: 502
-      });
+      return new Response(`Erro Supabase (${resposta.status}): ${erro}`, {
+  status: 502
+});
     }
 
     const etiquetas = await resposta.json();
