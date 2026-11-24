@@ -1,0 +1,119 @@
+.pagina-painel {
+  display: block;
+  align-items: initial;
+  justify-content: initial;
+}
+
+.topo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 22px;
+  background: #111;
+  border-bottom: 1px solid #222;
+}
+
+.logo-pequena { margin: 0; font-size: 1.5rem; }
+
+.topo-direita { display: flex; align-items: center; gap: 14px; font-size: 0.85rem; color: #bbb; }
+
+.botao-sair {
+  width: auto;
+  margin: 0;
+  padding: 8px 16px;
+  background: transparent;
+  border: 1px solid #444;
+  color: #fff;
+  font-size: 0.85rem;
+}
+.botao-sair:hover { border-color: #EA4335; color: #EA4335; }
+
+.conteudo { padding: 28px 22px; max-width: 900px; margin: 0 auto; }
+.conteudo .mensagem { text-align: left; }
+
+/* Histórico de lotes */
+
+.secao-lotes,
+.secao-historico {
+  margin-top: 32px;
+  padding: 24px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+}
+
+.secao-lotes h3,
+.secao-historico h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.secao-lotes p,
+.secao-historico p {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+#form-lote {
+  max-width: 420px;
+}
+
+#form-lote button {
+  margin-top: 18px;
+}
+
+.tabela-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 20px;
+}
+
+.tabela-lotes {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.9rem;
+}
+
+.tabela-lotes th,
+.tabela-lotes td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #292929;
+  white-space: nowrap;
+}
+
+.tabela-lotes th {
+  color: #999;
+  font-weight: 500;
+}
+
+.tabela-lotes td {
+  color: #eee;
+}
+
+.tabela-lotes button {
+  width: auto;
+  margin: 0;
+  padding: 7px 12px;
+  font-size: 0.8rem;
+}
+
+.detalhes-lote {
+  margin-top: 20px;
+}
+
+@media (max-width: 600px) {
+  .secao-lotes,
+  .secao-historico {
+    padding: 16px;
+  }
+
+  .tabela-lotes {
+    font-size: 0.8rem;
+  }
+
+  .tabela-lotes th,
+  .tabela-lotes td {
+    padding: 10px 8px;
+  }
+}

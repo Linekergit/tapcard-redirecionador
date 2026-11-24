@@ -1,0 +1,92 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TapCard | Painel</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="painel.css">
+</head>
+<body class="pagina-painel">
+
+  <header class="topo">
+    <h1 class="logo-pequena">
+      <span class="t">T</span><span class="a">A</span><span class="p">P</span><span class="card">CARD</span>
+    </h1>
+
+    <div class="topo-direita">
+      <span id="usuario-email"></span>
+      <button id="botao-sair" class="botao-sair">Sair</button>
+    </div>
+  </header>
+
+  <main class="conteudo">
+    <h2>Painel administrativo</h2>
+
+    <p id="status-painel" class="mensagem info">
+      Verificando acesso...
+    </p>
+
+    <section class="secao-lotes">
+      <h3>Gerar novo lote</h3>
+      <p>Escolha um nome e a quantidade de etiquetas que deseja gerar.</p>
+
+      <form id="form-lote">
+        <label for="nome-lote">Nome do lote</label>
+        <input
+          type="text"
+          id="nome-lote"
+          placeholder="Ex.: Lote Novembro 2026"
+          required
+        >
+
+        <label for="quantidade-lote">Quantidade de etiquetas</label>
+        <input
+          type="number"
+          id="quantidade-lote"
+          min="1"
+          step="1"
+          placeholder="Ex.: 50"
+          required
+        >
+
+        <button type="submit" id="botao-gerar-lote">
+          Gerar etiquetas
+        </button>
+      </form>
+
+      <p id="resultado-lote" class="mensagem info"></p>
+      <section class="secao-historico">
+  <h3>Histórico de lotes</h3>
+  <p>Confira os lotes que já foram criados.</p>
+
+  <div class="tabela-container">
+    <table class="tabela-lotes">
+      <thead>
+        <tr>
+          <th>Nome do lote</th>
+          <th>Quantidade</th>
+          <th>Data de criação</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="lista-lotes">
+        <tr>
+          <td colspan="4">Carregando lotes...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="detalhes-lote" class="detalhes-lote"></div>
+</section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="config.js"></script>
+  <script src="painel.js"></script>
+
+</body>
+</html>

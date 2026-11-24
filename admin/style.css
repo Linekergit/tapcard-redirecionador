@@ -1,0 +1,68 @@
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.caixa {
+  width: 100%;
+  max-width: 380px;
+  margin: 20px;
+  padding: 32px 28px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 16px;
+}
+
+.logo { margin: 0; text-align: center; font-size: 2.4rem; letter-spacing: 1px; }
+.t { color: #4285F4; }
+.a { color: #EA4335; }
+.p { color: #FBBC05; }
+.card { color: #fff; }
+
+.frase {
+  text-align: center;
+  color: #888;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  margin: 6px 0 28px;
+}
+
+label { display: block; margin: 14px 0 6px; font-size: 0.85rem; color: #bbb; }
+
+input {
+  width: 100%;
+  padding: 12px;
+  background: #000;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+input:focus { outline: none; border-color: #4285F4; }
+
+button {
+  width: 100%;
+  margin-top: 22px;
+  padding: 13px;
+  background: #4285F4;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+button:disabled { opacity: 0.6; cursor: wait; }
+
+.mensagem { min-height: 1.2em; margin: 14px 0 0; font-size: 0.9rem; text-align: center; }
+.mensagem.erro { color: #EA4335; }
+.mensagem.sucesso { color: #34A853; }
+.mensagem.info { color: #bbb; }
