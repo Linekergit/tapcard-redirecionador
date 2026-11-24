@@ -17,6 +17,9 @@ export async function onRequest(context) {
     });
 
     if (!resposta.ok) {
+      const erro = await resposta.text();
+      console.error("Erro do Supabase:", resposta.status, erro);
+
       return new Response("Erro ao consultar etiqueta.", {
         status: 502
       });
@@ -36,9 +39,10 @@ export async function onRequest(context) {
       etiqueta.status !== "ativada" ||
       !etiqueta.destination_url
     ) {
-      return new Response("Esta etiqueta ainda não está ativada.", {
-        status: 403
-      });
+      return new Response(
+        "Esta etiqueta ainda não está ativada.",
+        { status: 403 }
+      );
     }
 
     const destino = new URL(etiqueta.destination_url);
