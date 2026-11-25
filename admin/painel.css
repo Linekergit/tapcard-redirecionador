@@ -204,3 +204,19 @@
     padding: 16px;
   }
 }
+.campo-cliente-etiqueta {
+  width: 100%;
+  padding: 12px;
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: 1rem;
+  color-scheme: dark;
+  outline: none;
+}
+
+.campo-cliente-etiqueta:focus {
+  border-color: #4285F4;
+}
