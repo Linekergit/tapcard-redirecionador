@@ -56,6 +56,42 @@ function gerarQRCode(codigo, elemento) {
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.H
   });
+  // Baixa todos os QR Codes de um lote em ZIP
+async function baixarLoteZIP() {
+  const cartoes = detalhesLote.querySelectorAll(".cartao-etiqueta");
+
+  if (cartoes.length === 0) {
+    alert("Nenhuma etiqueta encontrada neste lote.");
+    return;
+  }
+
+  const zip = new JSZip();
+
+  for (const cartao of cartoes) {
+    const codigo = cartao.querySelector("h4").textContent;
+    const canvas = cartao.querySelector("canvas");
+
+    if (!canvas) continue;
+
+    const imagem = canvas.toDataURL("image/png");
+    const conteudo = imagem.split(",")[1];
+
+    zip.file(`${codigo}.png`, conteudo, {
+      base64: true
+    });
+  }
+
+  const arquivo = await zip.generateAsync({
+    type: "blob"
+  });
+
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(arquivo);
+  link.download = "TapCard-QR-Codes.zip";
+  link.click();
+
+  URL.revokeObjectURL(link.href);
+}
 }
 // Verifica se o usuário pode acessar o painel
 async function iniciar() {
@@ -170,6 +206,13 @@ async function visualizarEtiquetas(batchId) {
     detalhesLote.innerHTML = `
     <h3>Etiquetas do lote</h3>
     <p>${etiquetas.length} etiquetas encontradas.</p>
+    <button
+  type="button"
+  class="botao-baixar-lote"
+  id="botao-baixar-lote"
+>
+  Baixar lote completo (.ZIP)
+</button>
 
     <div class="grade-etiquetas">
       ${etiquetas.map(etiqueta => `
@@ -204,6 +247,12 @@ async function visualizarEtiquetas(batchId) {
 
     gerarQRCode(etiqueta.code, elemento);
   });
+  const botaoBaixarLote = document.getElementById(
+    "botao-baixar-lote"
+  );
+
+  botaoBaixarLote.addEventListener("click", baixarLoteZIP);
+
 }
 // Baixa o QR Code de uma etiqueta
 detalhesLote.addEventListener("click", event => {
