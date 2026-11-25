@@ -27,6 +27,7 @@ const clienteObservacoes = document.getElementById("cliente-observacoes");
 const botaoCadastrarCliente = document.getElementById("botao-cadastrar-cliente");
 const resultadoCliente = document.getElementById("resultado-cliente");
 const listaClientes = document.getElementById("lista-clientes");
+let clienteEditandoId = null;
 
 // Volta para a tela de login
 function voltarParaLogin() {
@@ -208,7 +209,7 @@ async function carregarLotes() {
   `).join("");
 }
 
-// Mostra as etiquetas de um lote específico
+
 // Busca os clientes cadastrados no Supabase
 async function carregarClientes() {
   listaClientes.innerHTML = "<p>Carregando clientes...</p>";
@@ -239,6 +240,7 @@ async function carregarClientes() {
             <th>Telefone</th>
             <th>E-mail</th>
             <th>Status</th>
+            <th>Ações</th>
           </tr>
         </thead>
         <tbody>
@@ -249,6 +251,15 @@ async function carregarClientes() {
               <td>${escaparHTML(cliente.phone || "-")}</td>
               <td>${escaparHTML(cliente.email || "-")}</td>
               <td>${escaparHTML(cliente.status || "-")}</td>
+              <td>
+                <button
+                  type="button"
+                  class="botao-editar-cliente"
+                  data-id="${escaparHTML(cliente.id)}"
+                >
+                  Editar
+                </button>
+              </td>
             </tr>
           `).join("")}
         </tbody>
@@ -256,6 +267,7 @@ async function carregarClientes() {
     </div>
   `;
 }
+
 async function visualizarEtiquetas(batchId) {
   detalhesLote.innerHTML = "Carregando etiquetas...";
 
@@ -493,44 +505,63 @@ formLote.addEventListener("submit", async event => {
   }
 });
 
-// Cadastrar novo cliente
+
 formCliente.addEventListener("submit", async event => {
   event.preventDefault();
 
   botaoCadastrarCliente.disabled = true;
-  botaoCadastrarCliente.textContent = "Cadastrando...";
+  botaoCadastrarCliente.textContent = "Salvando...";
 
-  resultadoCliente.textContent = "Salvando cliente...";
+  resultadoCliente.textContent = "Salvando informações...";
   resultadoCliente.className = "mensagem info";
 
+  const dadosCliente = {
+    business_name: clienteEmpresa.value.trim(),
+    owner_name: clienteResponsavel.value.trim() || null,
+    phone: clienteTelefone.value.trim() || null,
+    email: clienteEmail.value.trim() || null,
+    address: clienteEndereco.value.trim() || null,
+    purchase_date: clienteData.value || null,
+    status: clienteStatus.value,
+    notes: clienteObservacoes.value.trim() || null
+  };
+
   try {
-    const { error } = await db
-      .from("customers")
-      .insert({
-        business_name: clienteEmpresa.value.trim(),
-        owner_name: clienteResponsavel.value.trim() || null,
-        phone: clienteTelefone.value.trim() || null,
-        email: clienteEmail.value.trim() || null,
-        address: clienteEndereco.value.trim() || null,
-        purchase_date: clienteData.value || null,
-        status: clienteStatus.value,
-        notes: clienteObservacoes.value.trim() || null
-      });
+    let error;
+
+    if (clienteEditandoId) {
+      const resultado = await db
+        .from("customers")
+        .update(dadosCliente)
+        .eq("id", clienteEditandoId);
+
+      error = resultado.error;
+    } else {
+      const resultado = await db
+        .from("customers")
+        .insert(dadosCliente);
+
+      error = resultado.error;
+    }
 
     if (error) throw error;
 
-    resultadoCliente.textContent = "Cliente cadastrado com sucesso!";
+    resultadoCliente.textContent = clienteEditandoId
+      ? "Cliente atualizado com sucesso!"
+      : "Cliente cadastrado com sucesso!";
+
     resultadoCliente.className = "mensagem sucesso";
 
+    clienteEditandoId = null;
     formCliente.reset();
 
     await carregarClientes();
 
   } catch (error) {
-    console.error("Erro ao cadastrar cliente:", error);
+    console.error("Erro ao salvar cliente:", error);
 
     resultadoCliente.textContent =
-      "Não foi possível cadastrar: " + error.message;
+      "Não foi possível salvar: " + error.message;
 
     resultadoCliente.className = "mensagem erro";
 
@@ -539,6 +570,43 @@ formCliente.addEventListener("submit", async event => {
     botaoCadastrarCliente.textContent = "Cadastrar cliente";
   }
 });
+
+
+// Editar cliente cadastrado
+listaClientes.addEventListener("click", async event => {
+  const botao = event.target.closest(".botao-editar-cliente");
+
+  if (!botao) return;
+
+  const clienteId = botao.dataset.id;
+  clienteEditandoId = clienteId;
+
+  const { data: cliente, error } = await db
+    .from("customers")
+    .select("*")
+    .eq("id", clienteId)
+    .single();
+
+  if (error) {
+    alert("Não foi possível carregar os dados do cliente.");
+    console.error(error);
+    return;
+  }
+
+  clienteEmpresa.value = cliente.business_name || "";
+  clienteResponsavel.value = cliente.owner_name || "";
+  clienteTelefone.value = cliente.phone || "";
+  clienteEmail.value = cliente.email || "";
+  clienteEndereco.value = cliente.address || "";
+  clienteData.value = cliente.purchase_date || "";
+  clienteStatus.value = cliente.status || "ativo";
+  clienteObservacoes.value = cliente.notes || "";
+
+  botaoCadastrarCliente.textContent = "Salvar alterações";
+  resultadoCliente.textContent = "Editando cliente: " + cliente.business_name;
+  resultadoCliente.className = "mensagem info";
+});
+
 
 // Encerrar sessão
 botaoSair.addEventListener("click", async () => {
