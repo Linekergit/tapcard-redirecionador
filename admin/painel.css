@@ -117,3 +117,73 @@
     padding: 10px 8px;
   }
 }
+/* Cadastro de clientes */
+
+.secao-clientes {
+  margin-top: 32px;
+  padding: 24px;
+  background: #111;
+  border: 1px solid #222;
+  border-radius: 12px;
+}
+
+.secao-clientes h3 {
+  margin-top: 0;
+  font-size: 1.2rem;
+}
+
+.secao-clientes p {
+  color: #999;
+  font-size: 0.9rem;
+}
+
+#form-cliente {
+  max-width: 420px;
+}
+
+#form-cliente label {
+  display: block;
+  margin-top: 14px;
+  margin-bottom: 7px;
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+#form-cliente input,
+#form-cliente select,
+#form-cliente textarea {
+  width: 100%;
+  padding: 12px;
+  background: #080808;
+  color: #fff;
+  border: 1px solid #333;
+  border-radius: 7px;
+  font: inherit;
+  font-size: 0.9rem;
+  outline: none;
+}
+
+#form-cliente input:focus,
+#form-cliente select:focus,
+#form-cliente textarea:focus {
+  border-color: #EA4335;
+}
+
+#form-cliente select {
+  cursor: pointer;
+}
+
+#form-cliente textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+#form-cliente button {
+  margin-top: 18px;
+}
+
+@media (max-width: 600px) {
+  .secao-clientes {
+    padding: 16px;
+  }
+}
