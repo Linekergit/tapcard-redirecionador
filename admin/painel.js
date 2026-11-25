@@ -15,6 +15,7 @@ const resultadoLote = document.getElementById("resultado-lote");
 const listaLotes = document.getElementById("lista-lotes");
 const detalhesLote = document.getElementById("detalhes-lote");
 
+// Volta para a tela de login
 function voltarParaLogin() {
   window.location.href = "index.html";
 }
@@ -37,6 +38,7 @@ function escaparHTML(valor) {
     "'": "&#039;"
   })[caractere]);
 }
+
 // Gera o endereço permanente de cada etiqueta
 function gerarLinkEtiqueta(codigo) {
   return `https://tapcard-redirecionador.pages.dev/r/${encodeURIComponent(codigo)}`;
@@ -56,10 +58,7 @@ function gerarQRCode(codigo, elemento) {
     colorLight: "#ffffff",
     correctLevel: QRCode.CorrectLevel.H
   });
-  // Baixa todos os QR Codes de um lote em ZIP
-
-
- }
+}
 
 // Baixa todos os QR Codes de um lote em ZIP
 async function baixarLoteZIP() {
@@ -115,6 +114,7 @@ async function baixarLoteZIP() {
     alert("Erro ao gerar o ZIP: " + erro.message);
   }
 }
+
 // Verifica se o usuário pode acessar o painel
 async function iniciar() {
   const { data, error } = await db.auth.getSession();
@@ -225,16 +225,17 @@ async function visualizarEtiquetas(batchId) {
     desativada: "Desativada"
   };
 
-    detalhesLote.innerHTML = `
+  detalhesLote.innerHTML = `
     <h3>Etiquetas do lote</h3>
     <p>${etiquetas.length} etiquetas encontradas.</p>
+
     <button
-  type="button"
-  class="botao-baixar-lote"
-  id="botao-baixar-lote"
->
-  Baixar lote completo (.ZIP)
-</button>
+      type="button"
+      class="botao-baixar-lote"
+      id="botao-baixar-lote"
+    >
+      Baixar lote completo (.ZIP)
+    </button>
 
     <div class="grade-etiquetas">
       ${etiquetas.map(etiqueta => `
@@ -269,13 +270,14 @@ async function visualizarEtiquetas(batchId) {
 
     gerarQRCode(etiqueta.code, elemento);
   });
+
   const botaoBaixarLote = document.getElementById(
     "botao-baixar-lote"
   );
 
   botaoBaixarLote.addEventListener("click", baixarLoteZIP);
-
 }
+
 // Baixa o QR Code de uma etiqueta
 detalhesLote.addEventListener("click", event => {
   const botao = event.target.closest(".botao-baixar-qr");
@@ -345,7 +347,6 @@ formLote.addEventListener("submit", async event => {
     resultadoLote.className = "mensagem sucesso";
 
     formLote.reset();
-
     detalhesLote.innerHTML = "";
 
     await carregarLotes();
@@ -370,4 +371,5 @@ botaoSair.addEventListener("click", async () => {
   voltarParaLogin();
 });
 
+// Inicia o painel
 iniciar();
