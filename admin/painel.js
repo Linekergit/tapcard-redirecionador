@@ -273,7 +273,7 @@ async function visualizarEtiquetas(batchId) {
 
   const { data: etiquetas, error } = await db
     .from("tags")
-    .select("code, status, destination_url")
+    .select("code, status, destination_url, customer_id")
     .eq("batch_id", batchId)
     .order("code", { ascending: true });
 
@@ -289,6 +289,17 @@ async function visualizarEtiquetas(batchId) {
       "Nenhuma etiqueta encontrada neste lote.";
     return;
   }
+  // Busca os clientes para vincular às etiquetas
+const { data: clientes, error: erroClientes } = await db
+  .from("customers")
+  .select("id, business_name")
+  .order("business_name", { ascending: true });
+
+if (erroClientes) {
+  console.error("Erro ao buscar clientes:", erroClientes);
+  detalhesLote.textContent = "Não foi possível carregar os clientes.";
+  return;
+}
 
   const nomesStatus = {
     disponivel: "Disponível",
@@ -318,6 +329,28 @@ async function visualizarEtiquetas(batchId) {
           <p class="status-etiqueta">
             ${nomesStatus[etiqueta.status] || escaparHTML(etiqueta.status)}
           </p>
+          <label>Cliente responsável</label>
+
+<select class="campo-cliente-etiqueta" data-code="${escaparHTML(etiqueta.code)}">
+  <option value="">Sem cliente vinculado</option>
+
+  ${clientes.map(cliente => `
+    <option
+      value="${escaparHTML(cliente.id)}"
+      ${cliente.id === etiqueta.customer_id ? "selected" : ""}
+    >
+      ${escaparHTML(cliente.business_name)}
+    </option>
+  `).join("")}
+</select>
+
+<button
+  type="button"
+  class="botao-vincular-cliente"
+  data-code="${escaparHTML(etiqueta.code)}"
+>
+  Vincular cliente
+</button>
                     <label>Link de destino</label>
 
           <input
@@ -415,6 +448,48 @@ detalhesLote.addEventListener("click", async event => {
   } finally {
     botao.disabled = false;
     botao.textContent = "Salvar destino";
+  }
+});
+// Vincula ou desvincula uma etiqueta de um cliente
+detalhesLote.addEventListener("click", async event => {
+  const botao = event.target.closest(".botao-vincular-cliente");
+
+  if (!botao) return;
+
+  const codigo = botao.dataset.code;
+
+  const cartao = botao.closest(".cartao-etiqueta");
+  const campoCliente = cartao.querySelector(".campo-cliente-etiqueta");
+
+  const clienteId = campoCliente.value || null;
+
+  botao.disabled = true;
+  botao.textContent = "Salvando...";
+
+  try {
+    const { error } = await db
+      .from("tags")
+      .update({
+        customer_id: clienteId,
+        updated_at: new Date().toISOString()
+      })
+      .eq("code", codigo);
+
+    if (error) throw error;
+
+    alert(
+      clienteId
+        ? `Etiqueta ${codigo} vinculada ao cliente com sucesso!`
+        : `Vínculo da etiqueta ${codigo} removido com sucesso!`
+    );
+
+  } catch (error) {
+    console.error("Erro ao vincular cliente:", error);
+    alert("Não foi possível vincular: " + error.message);
+
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Vincular cliente";
   }
 });
 
