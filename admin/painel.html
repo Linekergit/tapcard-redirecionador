@@ -57,37 +57,111 @@
       </form>
 
       <p id="resultado-lote" class="mensagem info"></p>
-      <section class="secao-historico">
-  <h3>Histórico de lotes</h3>
-  <p>Confira os lotes que já foram criados.</p>
+    </section>
 
-  <div class="tabela-container">
-    <table class="tabela-lotes">
-      <thead>
-        <tr>
-          <th>Nome do lote</th>
-          <th>Quantidade</th>
-          <th>Data de criação</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody id="lista-lotes">
-        <tr>
-          <td colspan="4">Carregando lotes...</td>
-        </tr>
-      </tbody>
-    </table>
+    <section class="secao-historico">
+      <h3>Histórico de lotes</h3>
+      <p>Confira os lotes que já foram criados.</p>
+
+      <div class="tabela-container">
+        <table class="tabela-lotes">
+          <thead>
+            <tr>
+              <th>Nome do lote</th>
+              <th>Quantidade</th>
+              <th>Data de criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-lotes">
+            <tr>
+              <td colspan="4">Carregando lotes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div id="detalhes-lote" class="detalhes-lote"></div>
+    </section>
+<section class="secao-clientes">
+  <h3>Gerenciamento de clientes</h3>
+  <p>Cadastre e gerencie os clientes da TapCard.</p>
+
+  <form id="form-cliente">
+    <label for="cliente-empresa">Nome da empresa</label>
+    <input
+      type="text"
+      id="cliente-empresa"
+      placeholder="Ex.: Barbearia Central"
+      required
+    >
+
+    <label for="cliente-responsavel">Nome do responsável</label>
+    <input
+      type="text"
+      id="cliente-responsavel"
+      placeholder="Nome do responsável"
+    >
+
+    <label for="cliente-telefone">Telefone / WhatsApp</label>
+    <input
+      type="tel"
+      id="cliente-telefone"
+      placeholder="(21) 99999-9999"
+    >
+
+    <label for="cliente-email">E-mail</label>
+    <input
+      type="email"
+      id="cliente-email"
+      placeholder="email@empresa.com"
+    >
+
+    <label for="cliente-endereco">Endereço</label>
+    <input
+      type="text"
+      id="cliente-endereco"
+      placeholder="Endereço da empresa"
+    >
+
+    <label for="cliente-data">Data da compra</label>
+    <input
+      type="date"
+      id="cliente-data"
+    >
+
+    <label for="cliente-status">Status</label>
+    <select id="cliente-status">
+      <option value="ativo">Ativo</option>
+      <option value="inativo">Inativo</option>
+    </select>
+
+    <label for="cliente-observacoes">Observações</label>
+    <textarea
+      id="cliente-observacoes"
+      placeholder="Informações adicionais..."
+    ></textarea>
+
+    <button type="submit" id="botao-cadastrar-cliente">
+      Cadastrar cliente
+    </button>
+  </form>
+
+  <p id="resultado-cliente" class="mensagem info"></p>
+
+  <h3>Clientes cadastrados</h3>
+
+  <div id="lista-clientes">
+    <p>Carregando clientes...</p>
   </div>
-
-  <div id="detalhes-lote" class="detalhes-lote"></div>
 </section>
   </main>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
-<script src="config.js"></script>
-<script src="painel.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="config.js"></script>
+  <script src="painel.js"></script>
 
 </body>
 </html>
