@@ -152,15 +152,32 @@
 #form-cliente input,
 #form-cliente select,
 #form-cliente textarea {
+  display: block;
   width: 100%;
   padding: 12px;
-  background: #080808;
-  color: #fff;
+  background-color: #000 !important;
+  color: #fff !important;
   border: 1px solid #333;
-  border-radius: 7px;
-  font: inherit;
-  font-size: 0.9rem;
+  border-radius: 8px;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 1rem;
   outline: none;
+  color-scheme: dark;
+}
+
+#form-cliente input:focus,
+#form-cliente select:focus,
+#form-cliente textarea:focus {
+  border-color: #4285F4;
+}
+
+#form-cliente select {
+  cursor: pointer;
+}
+
+#form-cliente textarea {
+  min-height: 100px;
+  resize: vertical;
 }
 
 #form-cliente input:focus,
