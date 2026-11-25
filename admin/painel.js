@@ -1,442 +1,96 @@
 
-const { createClient } = supabase;
-const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>TapCard | Painel</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="painel.css">
+</head>
+<body class="pagina-painel">
 
-const statusPainel = document.getElementById("status-painel");
-const emailUsuario = document.getElementById("usuario-email");
-const botaoSair = document.getElementById("botao-sair");
+  <header class="topo">
+    <h1 class="logo-pequena">
+      <span class="t">T</span><span class="a">A</span><span class="p">P</span><span class="card">CARD</span>
+    </h1>
 
-const formLote = document.getElementById("form-lote");
-const nomeLote = document.getElementById("nome-lote");
-const quantidadeLote = document.getElementById("quantidade-lote");
-const botaoGerarLote = document.getElementById("botao-gerar-lote");
-const resultadoLote = document.getElementById("resultado-lote");
-
-const listaLotes = document.getElementById("lista-lotes");
-const detalhesLote = document.getElementById("detalhes-lote");
-
-// Volta para a tela de login
-function voltarParaLogin() {
-  window.location.href = "index.html";
-}
-
-// Formata a data para o padrão brasileiro
-function formatarData(data) {
-  return new Date(data).toLocaleString("pt-BR", {
-    dateStyle: "short",
-    timeStyle: "short"
-  });
-}
-
-// Evita interpretar nomes e códigos como HTML
-function escaparHTML(valor) {
-  return String(valor).replace(/[&<>"']/g, caractere => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#039;"
-  })[caractere]);
-}
-
-// Gera o endereço permanente de cada etiqueta
-function gerarLinkEtiqueta(codigo) {
-  return `https://tapcard-redirecionador.pages.dev/r/${encodeURIComponent(codigo)}`;
-}
-
-// Gera o QR Code de uma etiqueta
-function gerarQRCode(codigo, elemento) {
-  const link = gerarLinkEtiqueta(codigo);
-
-  elemento.innerHTML = "";
-
-  new QRCode(elemento, {
-    text: link,
-    width: 180,
-    height: 180,
-    colorDark: "#000000",
-    colorLight: "#ffffff",
-    correctLevel: QRCode.CorrectLevel.H
-  });
-}
-
-// Baixa todos os QR Codes de um lote em ZIP
-async function baixarLoteZIP() {
-  try {
-    const cartoes = detalhesLote.querySelectorAll(".cartao-etiqueta");
-
-    if (cartoes.length === 0) {
-      alert("Nenhuma etiqueta encontrada neste lote.");
-      return;
-    }
-
-    if (typeof JSZip === "undefined") {
-      alert("A biblioteca ZIP não foi carregada.");
-      return;
-    }
-
-    const zip = new JSZip();
-
-    for (const cartao of cartoes) {
-      const codigo = cartao.querySelector("h4").textContent;
-      const canvas = cartao.querySelector("canvas");
-
-      if (!canvas) continue;
-
-      const imagem = canvas.toDataURL("image/png");
-      const conteudo = imagem.split(",")[1];
-
-      zip.file(`${codigo}.png`, conteudo, {
-        base64: true
-      });
-    }
-
-    const arquivo = await zip.generateAsync({
-      type: "blob"
-    });
-
-    const url = URL.createObjectURL(arquivo);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = "TapCard-QR-Codes.zip";
-
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => {
-      URL.revokeObjectURL(url);
-    }, 3000);
-
-  } catch (erro) {
-    console.error("Erro ao gerar ZIP:", erro);
-    alert("Erro ao gerar o ZIP: " + erro.message);
-  }
-}
-
-// Verifica se o usuário pode acessar o painel
-async function iniciar() {
-  const { data, error } = await db.auth.getSession();
-
-  if (error || !data.session) {
-    voltarParaLogin();
-    return;
-  }
-
-  const { data: ehAdmin, error: erroAdmin } =
-    await db.rpc("is_admin");
-
-  if (erroAdmin || !ehAdmin) {
-    await db.auth.signOut();
-    voltarParaLogin();
-    return;
-  }
-
-  emailUsuario.textContent = data.session.user.email;
-
-  statusPainel.textContent =
-    "Acesso confirmado. Bem-vindo ao painel TapCard.";
-
-  statusPainel.className = "mensagem sucesso";
-
-  await carregarLotes();
-}
-
-// Busca os lotes cadastrados no Supabase
-async function carregarLotes() {
-  listaLotes.innerHTML = `
-    <tr>
-      <td colspan="4">Carregando lotes...</td>
-    </tr>
-  `;
-
-  const { data: lotes, error } = await db
-    .from("batches")
-    .select("id, name, quantity, created_at")
-    .order("created_at", { ascending: false });
-
-  if (error) {
-    console.error("Erro ao carregar lotes:", error);
-
-    listaLotes.innerHTML = `
-      <tr>
-        <td colspan="4">Não foi possível carregar os lotes.</td>
-      </tr>
-    `;
-    return;
-  }
-
-  if (!lotes || lotes.length === 0) {
-    listaLotes.innerHTML = `
-      <tr>
-        <td colspan="4">Nenhum lote cadastrado.</td>
-      </tr>
-    `;
-    return;
-  }
-
-  listaLotes.innerHTML = lotes.map(lote => `
-    <tr>
-      <td>${escaparHTML(lote.name)}</td>
-      <td>${lote.quantity}</td>
-      <td>${formatarData(lote.created_at)}</td>
-      <td>
-        <button
-          type="button"
-          class="botao-ver-lote"
-          data-batch-id="${escaparHTML(lote.id)}"
-        >
-          Ver etiquetas
-        </button>
-      </td>
-    </tr>
-  `).join("");
-}
-
-// Mostra as etiquetas de um lote específico
-async function visualizarEtiquetas(batchId) {
-  detalhesLote.innerHTML = "Carregando etiquetas...";
-
-  const { data: etiquetas, error } = await db
-    .from("tags")
-    .select("code, status, destination_url")
-    .eq("batch_id", batchId)
-    .order("code", { ascending: true });
-
-  if (error) {
-    console.error("Erro ao buscar etiquetas:", error);
-    detalhesLote.textContent =
-      "Não foi possível carregar as etiquetas.";
-    return;
-  }
-
-  if (!etiquetas || etiquetas.length === 0) {
-    detalhesLote.textContent =
-      "Nenhuma etiqueta encontrada neste lote.";
-    return;
-  }
-
-  const nomesStatus = {
-    disponivel: "Disponível",
-    reservada: "Reservada",
-    vendida: "Vendida",
-    ativada: "Ativada",
-    desativada: "Desativada"
-  };
-
-  detalhesLote.innerHTML = `
-    <h3>Etiquetas do lote</h3>
-    <p>${etiquetas.length} etiquetas encontradas.</p>
-
-    <button
-      type="button"
-      class="botao-baixar-lote"
-      id="botao-baixar-lote"
-    >
-      Baixar lote completo (.ZIP)
-    </button>
-
-    <div class="grade-etiquetas">
-      ${etiquetas.map(etiqueta => `
-        <div class="cartao-etiqueta">
-          <h4>${escaparHTML(etiqueta.code)}</h4>
-
-          <p class="status-etiqueta">
-            ${nomesStatus[etiqueta.status] || escaparHTML(etiqueta.status)}
-          </p>
-                    <label>Link de destino</label>
-
-          <input
-            type="url"
-            class="campo-destino"
-            data-code="${escaparHTML(etiqueta.code)}"
-            value="${escaparHTML(etiqueta.destination_url || "")}"
-            placeholder="https://..."
-          >
-
-          <button
-            type="button"
-            class="botao-salvar-destino"
-            data-code="${escaparHTML(etiqueta.code)}"
-          >
-            Salvar destino
-          </button>
-
-          <div
-            class="qrcode-etiqueta"
-            id="qrcode-${escaparHTML(etiqueta.code)}"
-          ></div>
-
-          <button
-            type="button"
-            class="botao-baixar-qr"
-            data-code="${escaparHTML(etiqueta.code)}"
-          >
-            Baixar QR Code
-          </button>
-        </div>
-      `).join("")}
+    <div class="topo-direita">
+      <span id="usuario-email"></span>
+      <button id="botao-sair" class="botao-sair">Sair</button>
     </div>
-  `;
+  </header>
 
-  etiquetas.forEach(etiqueta => {
-    const elemento = document.getElementById(
-      `qrcode-${etiqueta.code}`
-    );
+  <main class="conteudo">
+    <h2>Painel administrativo</h2>
 
-    gerarQRCode(etiqueta.code, elemento);
-  });
+    <p id="status-painel" class="mensagem info">
+      Verificando acesso...
+    </p>
 
-  const botaoBaixarLote = document.getElementById(
-    "botao-baixar-lote"
-  );
+    <section class="secao-lotes">
+      <h3>Gerar novo lote</h3>
+      <p>Escolha um nome e a quantidade de etiquetas que deseja gerar.</p>
 
-  botaoBaixarLote.addEventListener("click", baixarLoteZIP);
-}
-// Salva ou atualiza o destino de uma etiqueta
-detalhesLote.addEventListener("click", async event => {
-  const botao = event.target.closest(".botao-salvar-destino");
+      <form id="form-lote">
+        <label for="nome-lote">Nome do lote</label>
+        <input
+          type="text"
+          id="nome-lote"
+          placeholder="Ex.: Lote Novembro 2026"
+          required
+        >
 
-  if (!botao) return;
+        <label for="quantidade-lote">Quantidade de etiquetas</label>
+        <input
+          type="number"
+          id="quantidade-lote"
+          min="1"
+          step="1"
+          placeholder="Ex.: 50"
+          required
+        >
 
-  const codigo = botao.dataset.code;
+        <button type="submit" id="botao-gerar-lote">
+          Gerar etiquetas
+        </button>
+      </form>
 
-  const cartao = botao.closest(".cartao-etiqueta");
-  const campo = cartao.querySelector(".campo-destino");
+      <p id="resultado-lote" class="mensagem info"></p>
+    </section>
 
-  const destino = campo.value.trim();
+    <section class="secao-historico">
+      <h3>Histórico de lotes</h3>
+      <p>Confira os lotes que já foram criados.</p>
 
-  if (!destino) {
-    alert("Informe um link de destino.");
-    return;
-  }
+      <div class="tabela-container">
+        <table class="tabela-lotes">
+          <thead>
+            <tr>
+              <th>Nome do lote</th>
+              <th>Quantidade</th>
+              <th>Data de criação</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="lista-lotes">
+            <tr>
+              <td colspan="4">Carregando lotes...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
 
-  try {
-    const url = new URL(destino);
+      <div id="detalhes-lote" class="detalhes-lote"></div>
+    </section>
 
-    if (url.protocol !== "https:" && url.protocol !== "http:") {
-      alert("Informe um endereço HTTP ou HTTPS válido.");
-      return;
-    }
+  </main>
 
-    botao.disabled = true;
-    botao.textContent = "Salvando...";
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.58.0/dist/umd/supabase.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="config.js"></script>
+  <script src="painel.js"></script>
 
-    const { error } = await db
-      .from("tags")
-      .update({
-        destination_url: destino,
-        updated_at: new Date().toISOString()
-      })
-      .eq("code", codigo);
-
-    if (error) throw error;
-
-    alert(`Destino da etiqueta ${codigo} atualizado com sucesso!`);
-
-  } catch (error) {
-    console.error("Erro ao salvar destino:", error);
-    alert("Não foi possível salvar: " + error.message);
-
-  } finally {
-    botao.disabled = false;
-    botao.textContent = "Salvar destino";
-  }
-});
-
-// Baixa o QR Code de uma etiqueta
-detalhesLote.addEventListener("click", event => {
-  const botao = event.target.closest(".botao-baixar-qr");
-
-  if (!botao) return;
-
-  const codigo = botao.dataset.code;
-
-  const elemento = document.getElementById(`qrcode-${codigo}`);
-  const canvas = elemento.querySelector("canvas");
-
-  if (!canvas) {
-    alert("Não foi possível gerar o QR Code.");
-    return;
-  }
-
-  const link = document.createElement("a");
-
-  link.href = canvas.toDataURL("image/png");
-  link.download = `${codigo}.png`;
-
-  link.click();
-});
-
-// Clique no botão Ver etiquetas
-listaLotes.addEventListener("click", event => {
-  const botao = event.target.closest(".botao-ver-lote");
-
-  if (!botao) return;
-
-  visualizarEtiquetas(botao.dataset.batchId);
-});
-
-// Gera um novo lote
-formLote.addEventListener("submit", async event => {
-  event.preventDefault();
-
-  const nome = nomeLote.value.trim();
-  const quantidade = Number(quantidadeLote.value);
-
-  if (!nome || !Number.isInteger(quantidade) || quantidade <= 0) {
-    resultadoLote.textContent =
-      "Informe um nome e uma quantidade válida.";
-    resultadoLote.className = "mensagem erro";
-    return;
-  }
-
-  botaoGerarLote.disabled = true;
-  botaoGerarLote.textContent = "Gerando etiquetas...";
-
-  resultadoLote.textContent =
-    "Aguarde, estamos criando seu lote...";
-  resultadoLote.className = "mensagem info";
-
-  try {
-    const { data, error } = await db.rpc("gerar_lote", {
-      p_nome: nome,
-      p_quantidade: quantidade
-    });
-
-    if (error) throw error;
-
-    resultadoLote.textContent =
-      `Lote criado com sucesso! ${data.quantity} etiquetas geradas: ` +
-      `${data.first_code} até ${data.last_code}.`;
-
-    resultadoLote.className = "mensagem sucesso";
-
-    formLote.reset();
-    detalhesLote.innerHTML = "";
-
-    await carregarLotes();
-
-  } catch (error) {
-    console.error("Erro ao gerar lote:", error);
-
-    resultadoLote.textContent =
-      "Não foi possível gerar o lote: " + error.message;
-
-    resultadoLote.className = "mensagem erro";
-
-  } finally {
-    botaoGerarLote.disabled = false;
-    botaoGerarLote.textContent = "Gerar etiquetas";
-  }
-});
-
-// Encerrar sessão
-botaoSair.addEventListener("click", async () => {
-  await db.auth.signOut();
-  voltarParaLogin();
-});
-
-// Inicia o painel
-iniciar();
+</body>
+</html>
