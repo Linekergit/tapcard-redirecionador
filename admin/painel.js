@@ -57,13 +57,60 @@ function gerarQRCode(codigo, elemento) {
     correctLevel: QRCode.CorrectLevel.H
   });
   // Baixa todos os QR Codes de um lote em ZIP
+// Baixa todos os QR Codes de um lote em ZIP
 async function baixarLoteZIP() {
-  const cartoes = detalhesLote.querySelectorAll(".cartao-etiqueta");
+  try {
+    const cartoes = detalhesLote.querySelectorAll(".cartao-etiqueta");
 
-  if (cartoes.length === 0) {
-    alert("Nenhuma etiqueta encontrada neste lote.");
-    return;
+    if (cartoes.length === 0) {
+      alert("Nenhuma etiqueta encontrada neste lote.");
+      return;
+    }
+
+    if (typeof JSZip === "undefined") {
+      alert("A biblioteca ZIP não foi carregada.");
+      return;
+    }
+
+    const zip = new JSZip();
+
+    for (const cartao of cartoes) {
+      const codigo = cartao.querySelector("h4").textContent;
+      const canvas = cartao.querySelector("canvas");
+
+      if (!canvas) continue;
+
+      const imagem = canvas.toDataURL("image/png");
+      const conteudo = imagem.split(",")[1];
+
+      zip.file(`${codigo}.png`, conteudo, {
+        base64: true
+      });
+    }
+
+    const arquivo = await zip.generateAsync({
+      type: "blob"
+    });
+
+    const url = URL.createObjectURL(arquivo);
+    const link = document.createElement("a");
+
+    link.href = url;
+    link.download = "TapCard-QR-Codes.zip";
+
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+    }, 3000);
+
+  } catch (erro) {
+    console.error("Erro ao gerar ZIP:", erro);
+    alert("Erro ao gerar o ZIP: " + erro.message);
   }
+}
 
   const zip = new JSZip();
 
