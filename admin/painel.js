@@ -200,7 +200,7 @@ async function visualizarEtiquetas(batchId) {
 
   const { data: etiquetas, error } = await db
     .from("tags")
-    .select("code, status")
+    .select("code, status, destination_url")
     .eq("batch_id", batchId)
     .order("code", { ascending: true });
 
@@ -245,6 +245,23 @@ async function visualizarEtiquetas(batchId) {
           <p class="status-etiqueta">
             ${nomesStatus[etiqueta.status] || escaparHTML(etiqueta.status)}
           </p>
+                    <label>Link de destino</label>
+
+          <input
+            type="url"
+            class="campo-destino"
+            data-code="${escaparHTML(etiqueta.code)}"
+            value="${escaparHTML(etiqueta.destination_url || "")}"
+            placeholder="https://..."
+          >
+
+          <button
+            type="button"
+            class="botao-salvar-destino"
+            data-code="${escaparHTML(etiqueta.code)}"
+          >
+            Salvar destino
+          </button>
 
           <div
             class="qrcode-etiqueta"
@@ -277,6 +294,56 @@ async function visualizarEtiquetas(batchId) {
 
   botaoBaixarLote.addEventListener("click", baixarLoteZIP);
 }
+// Salva ou atualiza o destino de uma etiqueta
+detalhesLote.addEventListener("click", async event => {
+  const botao = event.target.closest(".botao-salvar-destino");
+
+  if (!botao) return;
+
+  const codigo = botao.dataset.code;
+
+  const cartao = botao.closest(".cartao-etiqueta");
+  const campo = cartao.querySelector(".campo-destino");
+
+  const destino = campo.value.trim();
+
+  if (!destino) {
+    alert("Informe um link de destino.");
+    return;
+  }
+
+  try {
+    const url = new URL(destino);
+
+    if (url.protocol !== "https:" && url.protocol !== "http:") {
+      alert("Informe um endereço HTTP ou HTTPS válido.");
+      return;
+    }
+
+    botao.disabled = true;
+    botao.textContent = "Salvando...";
+
+    const { error } = await db
+      .from("tags")
+      .update({
+        destination_url: destino,
+        updated_at: new Date().toISOString()
+      })
+      .eq("code", codigo);
+
+    if (error) throw error;
+
+    alert(`Destino da etiqueta ${codigo} atualizado com sucesso!`);
+
+  } catch (error) {
+    console.error("Erro ao salvar destino:", error);
+    alert("Não foi possível salvar: " + error.message);
+
+  } finally {
+    botao.disabled = false;
+    botao.textContent = "Salvar destino";
+  }
+});
 
 // Baixa o QR Code de uma etiqueta
 detalhesLote.addEventListener("click", event => {
